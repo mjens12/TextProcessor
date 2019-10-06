@@ -7,12 +7,9 @@ https://arduino.stackexchange.com/questions/3774/how-can-i-declare-an-array-of-v
 
 int main(int argc, char *argv[]) {
 	char inBuffer[100] = "";
+	char *outBuffer;
 	int width = 0;
-	/*Testing in-buffer functionality
-	scanf("%s", &inBuffer); */
-	/*strcpy(inBuffer, "Testing this thing"); */
-	fgets(inBuffer, 100, stdin);
-	printf("%s", inBuffer);
+	int lineLength = 0;
 
 	/*Arg error handling */
 	if (argc == 3) {
@@ -34,13 +31,10 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "You have not entered the correct number of command line arguments!");
 	}
 
-	/* scanf("%s", &inBuffer); */
+	fgets(inBuffer, 100, stdin);
+	printf("%s", inBuffer);
+	strcat(outBuffer, strtok(inBuffer, " "));
 
-
-	/* Testing stuff */
-	char next[10];
-	strcpy(next, "testing!");
-	printf("%s", next);
-	printf("\ntest");
+	free(outBuffer);
 	return (1);
 }
