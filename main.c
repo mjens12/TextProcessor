@@ -7,6 +7,7 @@ https://arduino.stackexchange.com/questions/3774/how-can-i-declare-an-array-of-v
 
 int main(int argc, char *argv[]) {
 	char inBuffer[100] = "";
+	char *temp;
 	char *outBuffer;
 	int width = 0;
 	int lineLength = 0;
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
 						"The width command line parameter is not a number!");
 			} else {
 				width = atoi(argv[2]);
-				char *outBuffer = malloc(sizeof(char) * width);
+				outBuffer = malloc(sizeof(char) * width);
 				printf("Formatting text with a width of %d characters.\n", width);
 			}
 		} else {
@@ -32,9 +33,26 @@ int main(int argc, char *argv[]) {
 	}
 
 	fgets(inBuffer, 100, stdin);
+
 	printf("%s", inBuffer);
-	strcat(outBuffer, strtok(inBuffer, " "));
+
+	temp = strtok(inBuffer, " ");
+
+	strcpy(outBuffer, temp);
+
+	while (temp){
+		printf("%s", temp);
+		strcat(temp, " ");
+		lineLength = lineLength + strlen(temp);
+		strcat(outBuffer, temp);
+		strcpy(temp, strtok(NULL, " "));
+	}
+
+	strcpy(outBuffer, temp);
+
+	printf(outBuffer);
 
 	free(outBuffer);
+
 	return (1);
 }
