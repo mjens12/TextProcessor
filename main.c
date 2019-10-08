@@ -51,7 +51,9 @@ int main(int argc, char *argv[]) {
 		temp = strtok(NULL, " ");
 		printf("%s\n", outBuffer);
 	}
-    else{
+    if(!temp){
+    	fgets(inBuffer, 100, stdin);
+        strcpy(inBufferTemp, inBuffer);
 
     }
 
