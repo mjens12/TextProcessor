@@ -7,8 +7,9 @@ https://arduino.stackexchange.com/questions/3774/how-can-i-declare-an-array-of-v
 
 int main(int argc, char *argv[]) {
 	char inBuffer[100] = "";
-	char *temp;
+	char *inBufferTemp;
 	char *outBuffer;
+    char *temp;
 	int width = 0;
 	int lineLength = 0;
 
@@ -20,8 +21,9 @@ int main(int argc, char *argv[]) {
 						"The width command line parameter is not a number!");
 			} else {
 				width = atoi(argv[2]);
-				outBuffer = malloc(sizeof(char) * width);
-				printf("Formatting text with a width of %d characters.\n", width);
+				outBuffer = calloc(width+1, sizeof(char));
+				temp = malloc(sizeof(char) * width);
+				printf("Formatting text to a width of %d characters.\n", width);
 			}
 		} else {
 			fprintf(stderr,
@@ -34,25 +36,30 @@ int main(int argc, char *argv[]) {
 
 	fgets(inBuffer, 100, stdin);
 
-	printf("%s", inBuffer);
+	// https://stackoverflow.com/questions/23192362/strtok-affects-the-input-buffer
+	// copies inBuffer to a temp array so that strtok doesn't modify the original array
+    inBufferTemp = calloc(strlen(inBuffer)+1, sizeof(char));
 
-	temp = strtok(inBuffer, " ");
+    strcpy(inBufferTemp, inBuffer);
 
-	strcpy(outBuffer, temp);
+    temp = strtok(inBufferTemp," ");
 
-	while (temp){
-		printf("%s", temp);
-		strcat(temp, " ");
-		lineLength = lineLength + strlen(temp);
+    while (temp && (lineLength <= (width - strlen(temp)))){
+		lineLength = lineLength + strlen(temp) + 1;
 		strcat(outBuffer, temp);
-		strcpy(temp, strtok(NULL, " "));
+		strcat(outBuffer, " ");
+		temp = strtok(NULL, " ");
+		printf("%s\n", outBuffer);
 	}
+    else{
 
-	strcpy(outBuffer, temp);
+    }
 
 	printf(outBuffer);
 
+	free(temp);
 	free(outBuffer);
+	free(inBufferTemp);
 
 	return (1);
 }
