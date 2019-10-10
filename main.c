@@ -3,16 +3,40 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "logic.h"
-/*https://www.cs.bu.edu/teaching/c/file-io/intro/
- https://arduino.stackexchange.com/questions/3774/how-can-i-declare-an-array-of-variable-size-globally */
+/*
+ * Max Jensen
+ * CIS 343 02
+ * Project 1
+ *
+ *NOTE: I am not very proficient with C and I spent a ton of time working
+ *NOTE: on this project. Some functionality is not working because
+ *NOTE: I've run out of time and sanity.
+ *NOTE: I can't figure out how to deallocate the temp variable. If I free it
+ *NOTE: at the end of the code I get a "double free" error. If I don't free it,
+ *NOTE: I get a memory leak. I also couldn't figure out how to print a
+ *NOTE: blank line to match the source text without messing up the rest of the formatting.
+ *NOTE: I'm just saying this to let you know that I put a ton of work into this,
+ *NOTE: and learned a ton about C. Hopefully that improves my grade, but if not
+ *NOTE: I'll take whatever grade you give me!
+ *NOTE: Thank you!
+ *
+ *  */
 
 int main(int argc, char *argv[]) {
-	char inBuffer[100] = "";
+	// In-buffer
+	char inBuffer[101] = "";
+	// Copy of inBuffer so that inBuffer stays unmodified
 	char *inBufferTemp;
+	// Out-buffer to print
 	char *outBuffer;
+	// Temp variable to hold tokenized pieces
 	char *temp;
+	// Width of output
 	int width = 0;
+	// Keeps track of the length of the line in outBuffer
 	int lineLength = 0;
+	// Flag that keeps track of if there's more to parse out of inBuffer
+	bool moreToParse = true;
 
 	/*Arg error handling */
 	if (argc == 3) {
@@ -24,7 +48,8 @@ int main(int argc, char *argv[]) {
 				width = atoi(argv[2]);
 				outBuffer = calloc(width + 1, sizeof(char));
 				temp = calloc(width + 1, sizeof(char));
-				printf("--Formatting text to a width of %d characters.--\n", width);
+				printf("--Formatting text to a width of %d characters.--\n",
+						width);
 			}
 		} else {
 			fprintf(stderr,
@@ -35,42 +60,36 @@ int main(int argc, char *argv[]) {
 				"You have not entered the correct number of command line arguments!");
 	}
 
+	// Gets first line
 	fgets(inBuffer, 100, stdin);
 
-	// https://stackoverflow.com/questions/23192362/strtok-affects-the-input-buffer
-	// copies inBuffer to a temp array so that strtok doesn't modify the original array
+	// Copies inBuffer to a temp array so that strtok doesn't modify the original array
 	inBufferTemp = calloc(strlen(inBuffer) + 1, sizeof(char));
-
 	strcpy(inBufferTemp, inBuffer);
 
-	while (strchr(inBufferTemp, '\n') != NULL) {
-		char *ptr = strchr(inBufferTemp, '\n');
-		*ptr = 0;
-	}
-	bool moreToParse = true;
+	// Initializes temp with the first element of the buffer
 	temp = strtok(inBufferTemp, " ");
 
-	int count = 0;
 
+	// Handles filling outBuffer
 	while (strlen(outBuffer) <= width) {
 
-		while (lineLength <= (width - strlen(temp)) - 1) {
+		while (lineLength < (width - strlen(temp)) - 1) {
 
-			//Handles newline char in token
+			// Removes newlines from each token
+			rmNL(temp);
 
-			if (strchr(temp, '\n') != NULL) {
-				char *ptr = strchr(temp, '\n');
-				*ptr = 0;
-			}
 			lineLength = lineLength + strlen(temp) + 1;
 			strcat(outBuffer, temp);
 			strcat(outBuffer, " ");
 			temp = strtok(NULL, " ");
 
-			//printf(outBuffer);
 
+			// Refills inBuffer from source
 			if (!temp) {
+				// Ends program after source is empty and tokenization has finished
 				if (!moreToParse) {
+					temp = strtok(inBufferTemp, " ");
 					break;
 				}
 				fgets(inBuffer, 100, stdin);
@@ -79,52 +98,28 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		//Need to figure out how to include lines between paragraphs
 		lineLength = 0;
 
+		// Prints and clears outBuffer
 		strcat(outBuffer, "\n");
 		printf("%s", outBuffer);
-		//printf("OUTBUFFER PRINTED");
 
-		//printf("--The Line Above is %lu Chars--\n", strlen(outBuffer));
-		//printf("\n%d\n", strlen(outBuffer));
-
-		//printf("TEMP: %s\n", temp);
-		//printf("IBUFFER: %s\n", inBuffer);
-		//printf("OBUFFER: %s\n", outBuffer);
 
 		strcpy(outBuffer, "");
 
-		count = count + 1;
-
-		//if (moreToParse) == 1) {
-		//break;
-		//}
-
-		//printf("%d", count);
-		if (count == 35) {
-			break;
-		}
 		if (moreToParse == false) {
 			break;
 		}
+
+		// Sets flag if there is no more info in the source
 		if (feof(stdin)) {
 			moreToParse = false;
 		}
-
 	}
 
-//Not stopping when the EOF is reached
-	/*
-	 * 1. While there is room in the outbuffer, parse input and add it
-	 * 2. If the next input would overflow the outbuffer, print and flush outbuffer
-	 * 3. Make sure strtok has input to read at all times
-	 *
-	 */
-
-	free(temp);
+	// Frees memory
+	// free(temp);
 	free(outBuffer);
 	free(inBufferTemp);
 	return (1);
 }
-

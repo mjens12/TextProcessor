@@ -1,1 +1,1 @@
-void removeNewLine();
+void rmNL(char* input);
