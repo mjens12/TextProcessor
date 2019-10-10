@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "logic.h"
 /*https://www.cs.bu.edu/teaching/c/file-io/intro/
  https://arduino.stackexchange.com/questions/3774/how-can-i-declare-an-array-of-variable-size-globally */
@@ -22,8 +23,8 @@ int main(int argc, char *argv[]) {
 			} else {
 				width = atoi(argv[2]);
 				outBuffer = calloc(width + 1, sizeof(char));
-				temp = malloc(sizeof(char) * width);
-				printf("Formatting text to a width of %d characters.\n", width);
+				temp = calloc(width + 1, sizeof(char));
+				printf("--Formatting text to a width of %d characters.--\n", width);
 			}
 		} else {
 			fprintf(stderr,
@@ -42,30 +43,88 @@ int main(int argc, char *argv[]) {
 
 	strcpy(inBufferTemp, inBuffer);
 
+	while (strchr(inBufferTemp, '\n') != NULL) {
+		char *ptr = strchr(inBufferTemp, '\n');
+		*ptr = 0;
+	}
+	bool moreToParse = true;
 	temp = strtok(inBufferTemp, " ");
 
-	//need to test for end of file here
-	while (strlen(inBufferTemp) != 0) {
-		while (strlen(outBuffer) <= width) {
-			while (temp && (lineLength <= (width - strlen(temp)))) {
-				lineLength = lineLength + strlen(temp) + 1;
-				strcat(outBuffer, temp);
-				strcat(outBuffer, " ");
-				temp = strtok(NULL, " ");
-				//printf("%s\n", outBuffer);
+	int count = 0;
+
+	while (strlen(outBuffer) <= width) {
+
+		while (lineLength <= (width - strlen(temp)) - 1) {
+
+			//Handles newline char in token
+
+			if (strchr(temp, '\n') != NULL) {
+				char *ptr = strchr(temp, '\n');
+				*ptr = 0;
 			}
-		printf(outBuffer);
+			lineLength = lineLength + strlen(temp) + 1;
+			strcat(outBuffer, temp);
+			strcat(outBuffer, " ");
+			temp = strtok(NULL, " ");
+
+			//printf(outBuffer);
+
+			if (!temp) {
+				if (!moreToParse) {
+					break;
+				}
+				fgets(inBuffer, 100, stdin);
+				strcpy(inBufferTemp, inBuffer);
+				temp = strtok(inBufferTemp, " ");
+			}
+		}
+
+		//Need to figure out how to include lines between paragraphs
+		lineLength = 0;
+
+		strcat(outBuffer, "\n");
+		printf("%s", outBuffer);
+		//printf("OUTBUFFER PRINTED");
+
+		//printf("--The Line Above is %lu Chars--\n", strlen(outBuffer));
+		//printf("\n%d\n", strlen(outBuffer));
+
+		//printf("TEMP: %s\n", temp);
+		//printf("IBUFFER: %s\n", inBuffer);
+		//printf("OBUFFER: %s\n", outBuffer);
+
 		strcpy(outBuffer, "");
+
+		count = count + 1;
+
+		//if (moreToParse) == 1) {
+		//break;
+		//}
+
+		//printf("%d", count);
+		if (count == 35) {
+			break;
+		}
+		if (moreToParse == false) {
+			break;
+		}
+		if (feof(stdin)) {
+			moreToParse = false;
 		}
 
 	}
-	fgets(inBuffer, 100, stdin);
-	strcpy(inBufferTemp, inBuffer);
+
+//Not stopping when the EOF is reached
+	/*
+	 * 1. While there is room in the outbuffer, parse input and add it
+	 * 2. If the next input would overflow the outbuffer, print and flush outbuffer
+	 * 3. Make sure strtok has input to read at all times
+	 *
+	 */
 
 	free(temp);
 	free(outBuffer);
 	free(inBufferTemp);
-
 	return (1);
 }
 
